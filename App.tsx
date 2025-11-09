@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Alert, StyleSheet, Text, View,FlatList,TextInput } from "react-native";
+import { Alert, StyleSheet, Text, View,FlatList,TextInput,ScrollView } from "react-native";
 import {NavigationContainer} from "@react-navigation/native";
 import { Picker } from '@react-native-picker/picker';
 import {createBottomTabNavigator} from "@react-navigation/bottom-tabs";
@@ -18,10 +18,31 @@ export default function App() {
   const [items, setItems] = useState<Item[]>([]);
 
   function HomeScreen(){
+    const starters = items.filter(item => item.category === 'Starters');
+    const mains = items.filter(item => item.category === 'Mains' );
+    const desserts = items.filter (item => item.category === 'Desserts');
+
+    const average = (arr: {price:string}[]) => {
+      if (arr.length === 0) return 0;
+      const total = arr.reduce((sum, item) => sum + parseFloat(item.price || "0"), 0);
+      return (total / arr.length).toFixed(2);
+    };
+
+    const avgStarters = average(starters);
+    const avgMains = average(mains);
+    const avgDesserts = average(desserts);
+
     return (
       <View style={styles.container}>
         <Text style={styles.header}>Chef's Menu</Text>
         <Text style={styles.number}>Total number of Dishes: {items.length}</Text>
+
+        <View style={styles.avgBox}>
+          <Text style={styles.avgText}>Average Prices by Course:</Text>
+          <Text style={styles.avgItem}>Starters: R{avgStarters}</Text>
+          <Text style={styles.avgItem}>Mains: R{avgMains}</Text>
+          <Text style={styles.avgItem}>Desserts: R{avgDesserts}</Text>
+        </View>
 
         <FlatList
         data={items}
@@ -35,7 +56,7 @@ export default function App() {
           </View>
         )}
         ListEmptyComponent={
-          <Text>No dishes added yet. Go to "Add" to add some menus!</Text>
+          <Text>No dishes added yet. Go to "Add Menu Screen" to add some menus!</Text>
         }
         style={{ width:'100%'}}
         />
@@ -66,8 +87,26 @@ export default function App() {
       Alert.alert ('The Menu Item has been added successfully');
     };
 
+    const handleDelete = (itemName: string) => {
+      Alert.alert(
+        'Delete Item',
+        'Are You sure you want to delete the item',
+        [
+          {text: 'Cancel', style: 'cancel'},
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: () => {
+              const updatedList = items.filter((item) => item.name !== itemName);
+              setItems(updatedList);
+            },
+          },
+        ]
+      );
+    };
+
     return(
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <Text style={styles.header}>Add A Dish Item</Text>
 
         <TextInput
@@ -107,9 +146,33 @@ export default function App() {
         onPress={handleAdd}
         >Add Dish 
         </Text>
-        
-      </View>
-    )
+
+        <View style={{ marginTop: 20 }}>
+          {items.length === 0 ? (
+            <Text>No menu items added yet.</Text>
+          ) : (
+            items.map((item) => (
+              <View key={item.name} style={styles.box}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.itemName}>{item.name}</Text>
+                    <Text style={styles.itemDescription}>{item.description}</Text>
+                    <Text style={styles.itemCategory}>Course: {item.category}</Text>
+                    <Text style={styles.itemPrice}>R {parseFloat(item.price).toFixed(2)}</Text>
+                  </View>
+                  <Ionicons
+                    name="trash"
+                    size={22}
+                    color="#DC2626"
+                    onPress={() => handleDelete(item.name)}
+                  />
+                </View>
+              </View>
+            ))
+          )}
+        </View>
+      </ScrollView>
+    );
   }
   return (
    <NavigationContainer>
@@ -138,32 +201,29 @@ export default function App() {
 const styles = StyleSheet.create({
     container: {
     flex: 1,
-    backgroundColor: '#F2F6FF', // soft blue-tinted background
+    backgroundColor: '#F2F6FF', 
     paddingHorizontal: 20,
     paddingTop: 50,
   },
 
-  // Header Titles
   header: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1E3A8A', // deep navy blue
+    color: '#1E3A8A', 
     marginBottom: 20,
     textAlign: 'center',
   },
 
-  // Total count label
   number: {
     fontSize: 16,
-    color: '#334155', // neutral dark gray-blue
+    color: '#334155', 
     textAlign: 'center',
     marginBottom: 15,
   },
 
-  // Input fields
   input: {
     width: '100%',
-    borderColor: '#93C5FD', // soft sky blue border
+    borderColor: '#93C5FD', 
     borderWidth: 1.5,
     borderRadius: 10,
     padding: 12,
@@ -180,7 +240,7 @@ const styles = StyleSheet.create({
   label: {
     fontWeight: '600',
     fontSize: 15,
-    color: '#1E3A8A', // same navy tone as header
+    color: '#1E3A8A', 
     marginTop: 10,
     alignSelf: 'flex-start',
   },
@@ -195,9 +255,8 @@ const styles = StyleSheet.create({
     color: '#1E293B',
   },
 
-  // Add Dish Button
   button: {
-    backgroundColor: '#2563EB', // strong medium blue
+    backgroundColor: '#2563EB', 
     color: '#fff',
     fontWeight: 'bold',
     textAlign: 'center',
@@ -214,14 +273,13 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
 
-  // Each dish card
   box: {
-    backgroundColor: '#E0F2FE', // light sky blue background for cards
+    backgroundColor: '#E0F2FE', 
     borderRadius: 10,
     padding: 14,
     marginVertical: 6,
     borderLeftWidth: 4,
-    borderLeftColor: '#3B82F6', // bright blue accent
+    borderLeftColor: '#3B82F6', 
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -253,4 +311,22 @@ const styles = StyleSheet.create({
     color: '#2563EB',
     marginTop: 6,
   },
+  avgBox: {
+    backgroundColor: '#e0f2ff',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 15,
+    width: '100%',
+  },
+  avgText: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 5,
+    color: '#005f99',
+  },
+  avgItem: {
+    fontSize: 14,
+    color: '#0077cc',
+  },
+
 });

@@ -174,6 +174,47 @@ export default function App() {
       </ScrollView>
     );
   }
+
+  function FilterScreen() {
+    const [selectedCategory, setSelectedCategory] = useState('All');
+
+    const filteredItems = items.filter(item => selectedCategory === 'All' ? true : item.category === selectedCategory);
+    return(
+      <View style={styles.container}>
+        <Text style={styles.header}>Filter by course/catergory</Text>
+        <View style={styles.filterButtonContainer}>
+          {['All', 'Starters', 'Mains', 'Desserts'].map((category) => (
+            <Text 
+              key={category} 
+              style={[
+                styles.filterButton,
+                selectedCategory === category && styles.activeFilterButton,
+              ]} 
+              onPress={() => setSelectedCategory(category)}
+            > 
+              {category}
+            </Text>
+          ))}
+        </View>
+        {filteredItems.length === 0 ? (
+          <Text style={{ textAlign: 'center', marginTop: 20 }}>No dishes found.</Text>
+        ) : (
+          <FlatList
+            data={filteredItems}
+            keyExtractor={(item) => item.name}
+            renderItem={({ item }) => (
+              <View style={styles.box}>
+                <Text style={styles.itemName}>{item.name}</Text>
+                <Text style={styles.itemDescription}>{item.description}</Text>
+                <Text style={styles.itemCategory}>Course: {item.category}</Text>
+                <Text style={styles.itemPrice}>R {parseFloat(item.price).toFixed(2)}</Text>
+              </View>
+            )}
+          />
+        )}
+      </View>
+    )
+  }
   return (
    <NavigationContainer>
       <Tab.Navigator
@@ -187,11 +228,16 @@ export default function App() {
           if(route.name === 'Add Menu') {
             return <Ionicons name="add-circle" size={size} color={color}/>
           }
+
+          if(route.name === 'Filter Menu'){
+            return <Ionicons name="filter" size={size} color={color}/>
+          }
         },
       })}
       >
         <Tab.Screen name="Home" component={HomeScreen}/>
         <Tab.Screen name="Add Menu" component={AddScreen}/>
+        <Tab.Screen name="Filter Menu" component={FilterScreen} />
         
       </Tab.Navigator>
     </NavigationContainer>
@@ -327,6 +373,34 @@ const styles = StyleSheet.create({
   avgItem: {
     fontSize: 14,
     color: '#0077cc',
+  },
+
+  filterButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 15,
+    backgroundColor: '#DBEAFE',
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+
+  filterButton: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1E3A8A',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    borderWidth: 1.2,
+    borderColor: '#3B82F6',
+    overflow: 'hidden',
+  },
+
+  activeFilterButton: {
+    backgroundColor: '#3B82F6',
+    color: '#FFFFFF',
+    borderColor: '#1E40AF',
   },
 
 });

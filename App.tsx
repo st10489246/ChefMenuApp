@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { Alert, StyleSheet, Text, View,FlatList,TextInput,ScrollView } from "react-native";
+import { Alert, StyleSheet, Text, View,FlatList,TextInput,ScrollView, Image } from "react-native";
 import {NavigationContainer} from "@react-navigation/native";
 import { Picker } from '@react-native-picker/picker';
 import {createBottomTabNavigator} from "@react-navigation/bottom-tabs";
 import {Ionicons} from "@expo/vector-icons";
 
+//created a tab navigator to switch between the three different screens
 const Tab= createBottomTabNavigator();
 
 type Item = {
@@ -15,28 +16,43 @@ type Item = {
 };
 
 export default function App() {
+  //a state to store all the menu items
   const [items, setItems] = useState<Item[]>([]);
 
+  //Made a logo component to display the logo of the app
+  const AppLogo = () => (
+    <Image
+    source={require('./assets/foodLogo.jpg')}
+    style={styles.logo}
+    resizeMode="contain"
+    />
+  )
+
   function HomeScreen(){
+    //filters to seperate dishes by course/category
     const starters = items.filter(item => item.category === 'Starters');
     const mains = items.filter(item => item.category === 'Mains' );
     const desserts = items.filter (item => item.category === 'Desserts');
 
+    //function used to calculate average price 
     const average = (arr: {price:string}[]) => {
       if (arr.length === 0) return 0;
       const total = arr.reduce((sum, item) => sum + parseFloat(item.price || "0"), 0);
       return (total / arr.length).toFixed(2);
     };
 
+    //calculate average prices by course/category
     const avgStarters = average(starters);
     const avgMains = average(mains);
     const avgDesserts = average(desserts);
 
     return (
       <View style={styles.container}>
+        <AppLogo/>
         <Text style={styles.header}>Chef's Menu</Text>
         <Text style={styles.number}>Total number of Dishes: {items.length}</Text>
 
+        {/*The average price is displayed her */}
         <View style={styles.avgBox}>
           <Text style={styles.avgText}>Average Prices by Course:</Text>
           <Text style={styles.avgItem}>Starters: R{avgStarters}</Text>
@@ -44,6 +60,7 @@ export default function App() {
           <Text style={styles.avgItem}>Desserts: R{avgDesserts}</Text>
         </View>
 
+        {/*Lists all menu items that have been added by the user in Add menu screen */}
         <FlatList
         data={items}
         keyExtractor={(item) => item.name}
@@ -55,6 +72,7 @@ export default function App() {
             <Text style={styles.itemPrice}>R {parseFloat(item.price).toFixed(2)}</Text>
           </View>
         )}
+        //shown when there are no menu items 
         ListEmptyComponent={
           <Text>No dishes added yet. Go to "Add Menu Screen" to add some menus!</Text>
         }
@@ -65,11 +83,13 @@ export default function App() {
   }
 
   function AddScreen() {
+    //states for input fields
     const [name,setName] = useState('');
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('');
     const [price, setPrice] = useState('');
 
+    //Adds a new item to the list
     const handleAdd = () => {
       if (!name || !description || !category || !price ) {
         Alert.alert ('All the Information fields should be completed');
@@ -77,8 +97,9 @@ export default function App() {
       }
 
       const newItem: Item = { name, description, category, price};
-      setItems([...items, newItem]);
+      setItems([...items, newItem]); //add to existing array
 
+      // Reset input fields after adding
       setName('');
       setDescription('');
       setCategory('');
@@ -87,6 +108,7 @@ export default function App() {
       Alert.alert ('The Menu Item has been added successfully');
     };
 
+    // Deletes an existing item by name
     const handleDelete = (itemName: string) => {
       Alert.alert(
         'Delete Item',
@@ -107,8 +129,10 @@ export default function App() {
 
     return(
       <ScrollView style={styles.container}>
+        <AppLogo/>
         <Text style={styles.header}>Add A Dish Item</Text>
 
+        {/*Input field to enter the name of the dish */}
         <TextInput
         placeholder="Dish Name:"
         value={name}
@@ -116,6 +140,7 @@ export default function App() {
         style={styles.input}
         />
 
+        {/*Input field to enter the description of the dish */}
         <TextInput
         placeholder="Description"
         value={description}
@@ -123,6 +148,7 @@ export default function App() {
         style={styles.input}
         />
 
+        {/*Category picker (Starters, Mains, Desserts) */}
         <Text style={styles.label}>Select Course</Text>
         <Picker
           selectedValue={category}
@@ -134,6 +160,7 @@ export default function App() {
           <Picker.Item label="Desserts" value="Desserts" />
         </Picker>
 
+        {/* Price input */}
         <TextInput
         placeholder="Price"
         value={price}
@@ -141,12 +168,14 @@ export default function App() {
         style={styles.input}
         />
 
+        {/* Add button */}
         <Text
         style={styles.button}
         onPress={handleAdd}
         >Add Dish 
         </Text>
 
+        {/* Display added dishes + delete icons */}
         <View style={{ marginTop: 20 }}>
           {items.length === 0 ? (
             <Text>No menu items added yet.</Text>
@@ -176,12 +205,16 @@ export default function App() {
   }
 
   function FilterScreen() {
+    // Selected category for filtering
     const [selectedCategory, setSelectedCategory] = useState('All');
 
+    // Filter logic: show all or filter by category
     const filteredItems = items.filter(item => selectedCategory === 'All' ? true : item.category === selectedCategory);
     return(
       <View style={styles.container}>
+        <AppLogo/>
         <Text style={styles.header}>Filter by course/catergory</Text>
+        {/* Filter buttons */}
         <View style={styles.filterButtonContainer}>
           {['All', 'Starters', 'Mains', 'Desserts'].map((category) => (
             <Text 
@@ -196,6 +229,7 @@ export default function App() {
             </Text>
           ))}
         </View>
+        {/* Filtered item list */}
         {filteredItems.length === 0 ? (
           <Text style={{ textAlign: 'center', marginTop: 20 }}>No dishes found.</Text>
         ) : (
@@ -221,6 +255,7 @@ export default function App() {
 
       screenOptions={({ route }) => ({
         tabBarIcon: ({color, size }) => {
+          // Icons for each tab
           if(route.name === 'Home') {
             return <Ionicons name="home" size={size} color={color}/>
           }
@@ -235,6 +270,7 @@ export default function App() {
         },
       })}
       >
+        {/* Tab Screens */}
         <Tab.Screen name="Home" component={HomeScreen}/>
         <Tab.Screen name="Add Menu" component={AddScreen}/>
         <Tab.Screen name="Filter Menu" component={FilterScreen} />
@@ -401,6 +437,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#3B82F6',
     color: '#FFFFFF',
     borderColor: '#1E40AF',
+  },
+
+  logo: {
+    width: 100,
+    height: 100,
+    alignSelf: 'center',
+    marginBottom: 10,
   },
 
 });

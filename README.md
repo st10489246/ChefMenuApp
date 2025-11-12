@@ -13,3 +13,5 @@ Made by: GRACE TAKANG (ST10489246)
 * I also made sure that the users/chef can view these items in the Add Menu Screen so that it can be easier for the users/chef to view these items and delete them if the want too by pressing the bin icon.
 * some comments have been removed because i want to make them more descriptive (hopefully in the near future).
 * Filter screen was created on the 08 November 2025. It allows the user to filter the menu items bu the course/catergory. style was added to make this screen look good and match with the other screens.
+* A logo has been added for the app. it appears in all three screens of the app.
+* comments has been added to explain the code i used
